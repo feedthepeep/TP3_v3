@@ -15,7 +15,19 @@ class SimpleExcelApp:
         #Таблица 
         left_frame = ttk.Frame(main_container, width=1000, height=900)
         left_frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=(0, 10))
-        left_frame.pack_propagate(False)  
+        left_frame.pack_propagate(False) 
+        
+        # Панель управления
+        right_frame = ttk.Frame(main_container, width=450, height=900, relief=tk.RIDGE, borderwidth=2)
+        right_frame.pack(side=tk.RIGHT, fill=tk.BOTH)
+        right_frame.pack_propagate(False)  
+        
+        #Заголовок панели
+        right_label = ttk.Label(right_frame, text="Панель управления", font=('Arial', 12, 'bold'))
+        right_label.pack(pady=10)
+        
+        self.control_panel = ttk.Frame(right_frame)
+        self.control_panel.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
         # Верхняя панель
         top_frame = ttk.Frame(left_frame)
@@ -68,11 +80,11 @@ class SimpleExcelApp:
                 # Установка фиксорованной ширины колонок
                 for i, col in enumerate(columns):
                     self.tree.heading(col, text=col)
-                    if i == 0:  
+                    if i == 0:  # Первая колонка (Регион)
                         self.tree.column(col, width=350, minwidth=350, anchor='w')
-                    elif i == 1: 
+                    elif i == 1:  # Вторая колонка (Код Региона)
                         self.tree.column(col, width=120, minwidth=120, anchor='center')
-                    else:  
+                    else:  # Колонки с годами (2011-2017)
                         self.tree.column(col, width=100, minwidth=100, anchor='center')
                 
                 # Вставка данных
@@ -81,9 +93,34 @@ class SimpleExcelApp:
                     self.tree.insert("", "end", values=values)
                 
                 self.info_label.config(text=f"Загружено: {len(self.df)} строк, {len(self.df.columns)} колонок")
+            
+                self.update_control_panel()
                 
             except Exception as e:
                 messagebox.showerror("Ошибка", f"Не удалось загрузить Excel файл:\n{str(e)}")
+    
+    def update_control_panel(self):
+        for widget in self.control_panel.winfo_children():
+            widget.destroy()
+        
+        if self.df is not None:
+            # Показываем информацию о данных
+            info_text = f"""Информация о данных:
+                            Регионов: {len(self.df)}
+                            Период: 2011-2017 гг.
+                            Всего записей: {len(self.df) * 7}
+                        """
+            
+            ttk.Label(self.control_panel, text=info_text, justify=tk.LEFT, 
+                     font=('Arial', 10)).pack(pady=10, anchor='w')
+            
+            ttk.Separator(self.control_panel, orient='horizontal').pack(fill=tk.X, pady=10)
+            
+            ttk.Label(self.control_panel, text="Доступные действия:", 
+                     font=('Arial', 10, 'bold')).pack(anchor='w', pady=(10, 5))
+        else:
+            ttk.Label(self.control_panel, text="Загрузите Excel файл\nдля отображения информации", 
+                     justify=tk.CENTER).pack(expand=True)
 
 if __name__ == "__main__":
     root = tk.Tk()
